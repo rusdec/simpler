@@ -14,6 +14,7 @@ module Simpler
     def initialize
       @router = Router.new
       @db = nil
+      @response = Rack::Response.new
     end
 
     def bootstrap!
@@ -40,6 +41,8 @@ module Simpler
 
     private
 
+    attr_writer :response
+
     def require_app
       Dir["#{Simpler.root}/app/**/*.rb"].each { |file| require file }
     end
@@ -59,7 +62,6 @@ module Simpler
     end
 
     def route_not_found
-      response = Rack::Response.new
       response.status = 404
       response
     end
