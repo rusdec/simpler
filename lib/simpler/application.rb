@@ -39,9 +39,11 @@ module Simpler
       end
     end
 
-    private
+    protected
 
-    attr_writer :response
+    attr_accessor :response
+
+    private
 
     def require_app
       Dir["#{Simpler.root}/app/**/*.rb"].each { |file| require file }
@@ -62,7 +64,7 @@ module Simpler
     end
 
     def route_not_found
-      response.status = 404
+      self.response.status = 404
       response
     end
   end
