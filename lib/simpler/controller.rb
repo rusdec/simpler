@@ -8,21 +8,19 @@ module Simpler
 
     CONTENT_TYPES = { html:   'text/html',
                       json:   'text/json',
-                      plain:  'text/plain' }.freeze
+                      plain:  'text/plain',
+                      xml:    'application/xml' }.freeze
 
     def initialize(env)
       @name = extract_name
       @request = Rack::Request.new(env)
       @response = Rack::Response.new
-      puts @response.methods.sort
-      puts @response.inspect
     end
 
     def make_response(action)
       @request.env['simpler.controller'] = self
       @request.env['simpler.action'] = action
 
-      set_default_content_type
       set_default_headers
 
       send(action)
@@ -43,16 +41,11 @@ module Simpler
     def write_response
       body = render_body
 
-      set_content_type_header(content_type)
       @response.write(body)
     end
 
     def set_default_headers
-      set_content_type_header(content_type)
-    end
-
-    def render_body
-      send "render_#{content_type}"
+      set_default_content_type
     end
 
     def params
@@ -63,31 +56,42 @@ module Simpler
       data = parse_render_data(data)
 
       if data[:type] == :html
-        @request.env['simpler.template'] = data
+        @request.env['simpler.template'] = data[:body]
       else
-        self.content_type = data[:type]
         self.content_body = data[:body]
       end
+
+      set_content_type(data[:type])
     end
 
-    def render_html
+    def render_body
+      send "render_body_#{content_type}"
+    end
+
+    def render_body_html
       View.new(@request.env).render(binding)
     end
 
-    def render_plain
+    def render_body_plain
       content_body
     end
 
-    def render_json
+    def render_body_json
       JSON.generate(content_body)
     end
 
+    def set_content_type(type)
+      self.content_type = type
+      set_content_type_header(type)
+    end
+
     def set_default_content_type
-      self.content_type = :html
+      set_content_type(:html)
     end
 
     def set_content_type_header(type)
-      @response['Content-Type'] = CONTENT_TYPES[type] || type
+      content_type_valid!(type)
+      @response['Content-Type'] = CONTENT_TYPES[type]
     end
 
     def set_status(status_code)
@@ -103,7 +107,6 @@ module Simpler
       else
         _data[:body] = data
       end
-      content_type_valid!(_data[:type])
 
       _data
     end
