@@ -8,12 +8,14 @@ module Simpler
 
     CONTENT_TYPES = { html:   'text/html',
                       json:   'text/json',
-                      plain:  'text/plain' }
+                      plain:  'text/plain' }.freeze
 
     def initialize(env)
       @name = extract_name
       @request = Rack::Request.new(env)
       @response = Rack::Response.new
+      puts @response.methods.sort
+      puts @response.inspect
     end
 
     def make_response(action)
@@ -85,7 +87,11 @@ module Simpler
     end
 
     def set_content_type_header(type)
-      @response['Content-Type'] = CONTENT_TYPES[type]
+      @response['Content-Type'] = CONTENT_TYPES[type] || type
+    end
+
+    def set_status(status_code)
+      @response.status = status_code
     end
 
     def parse_render_data(data)
