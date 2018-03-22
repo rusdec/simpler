@@ -24,7 +24,6 @@ module Simpler
 
     private
 
-
     def add_route(method, path, route_point)
       name, action = route_point.split('#')
       controller = controller_from_string(to_controller_name(name))
