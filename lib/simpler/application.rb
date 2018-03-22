@@ -18,6 +18,7 @@ module Simpler
     end
 
     def bootstrap!
+      require_logger
       setup_database
       require_app
       require_routes
@@ -57,6 +58,10 @@ module Simpler
 
     def require_routes
       require Simpler.root.join('config/routes')
+    end
+
+    def require_logger
+      require Simpler.root.join('middleware/app_logger')
     end
 
     def setup_database
