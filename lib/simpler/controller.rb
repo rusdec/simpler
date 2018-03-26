@@ -100,16 +100,16 @@ module Simpler
     end
 
     def parse_render_data(data)
-      _data = { body: nil, type: :html }
+      parsed_data = { body: nil, type: :html }
 
       if data.is_a?(Hash)
-        _data[:type] = data.keys[0]
-        _data[:body] = data[_data[:type]]
+        parsed_data[:type] = data.keys[0]
+        parsed_data[:body] = data[parsed_data[:type]]
       else
-        _data[:body] = data
+        parsed_data[:body] = data
       end
 
-      _data
+      parsed_data
     end
 
     def content_type_valid!(type)
