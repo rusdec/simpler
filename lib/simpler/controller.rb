@@ -37,62 +37,32 @@ module Simpler
 
     private
 
-    attr_accessor :content_type, :content_body
-
-    def extract_name
-      self.class.name.match('(?<name>.+)Controller')[:name].downcase
-    end
-
     def write_response
       body = render_body
-
       @response.write(body)
     end
 
     def set_default_headers
-      set_default_content_type
+      set_content_type_header(:html)
     end
 
     def render(data)
       data = parse_render_data(data)
-
-      if data[:type] == :html
-        @request.env['simpler.template'] = data[:body]
-      else
-        self.content_body = data[:body]
-      end
-
-      set_content_type(data[:type])
+      set_content_type_header(data[:type])
+      @request.env['simpler.template'] = data[:body]
     end
 
     def render_body
-      send "render_body_#{content_type}"
-    end
-
-    def render_body_html
       View.new(@request.env).render(binding)
-    end
-
-    def render_body_plain
-      content_body
-    end
-
-    def render_body_json
-      JSON.generate(content_body)
-    end
-
-    def set_content_type(type)
-      self.content_type = type
-      set_content_type_header(type)
-    end
-
-    def set_default_content_type
-      set_content_type(:html)
     end
 
     def set_content_type_header(type)
       content_type_valid!(type)
+      # response is not available in View
       @response['Content-Type'] = CONTENT_TYPES[type]
+      # content type forwarding to view
+      # env is available in View
+      @request.env['simpler.content_type'] = type
     end
 
     def set_status(status_code)
@@ -120,6 +90,10 @@ module Simpler
 
     def content_type_valid?(type)
       CONTENT_TYPES.has_key?(type)
+    end
+
+    def extract_name
+      self.class.name.match('(?<name>.+)Controller')[:name].downcase
     end
   end
 end
