@@ -31,7 +31,7 @@ module Simpler
     def call(env)
       route = @router.route_for(env)
       if route
-        parse_params(route: route, env: env)
+        env['simpler.controller.params'] = route.parse_params(env['PATH_INFO'])
         controller = route.controller.new(env)
         action = route.action
 
@@ -46,11 +46,6 @@ module Simpler
     attr_accessor :response
 
     private
-
-    def parse_params(**args)
-      path = args[:env]['PATH_INFO']
-      args[:env]['simpler.controller.params'] = args[:route].parse_params(path)
-    end
 
     def require_app
       Dir["#{Simpler.root}/app/**/*.rb"].each { |file| require file }

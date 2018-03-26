@@ -27,10 +27,10 @@ module Simpler
       # Available only since Ruby-2.5.0
       # https://ruby-doc.org/core-2.5.0/Hash.html#method-i-transform_keys
       def transform_keys(data)
-        _data = {}
-        data.each { |key, value| _data[key.to_sym] = value }
+        transformed_data = {}
+        data.each { |key, value| transformed_data[key.to_sym] = value }
 
-        _data
+        transformed_data
       end
 
       def to_path_pattern(path)

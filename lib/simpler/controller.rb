@@ -4,7 +4,7 @@ require 'json'
 module Simpler
   class Controller
 
-    attr_reader :name, :request, :response, :params
+    attr_reader :name, :request, :response
 
     CONTENT_TYPES = { html:   'text/html',
                       json:   'text/json',
@@ -31,6 +31,10 @@ module Simpler
       @response.finish
     end
 
+    def params
+      @request.params.merge(@params)
+    end
+
     private
 
     attr_accessor :content_type, :content_body
@@ -47,10 +51,6 @@ module Simpler
 
     def set_default_headers
       set_default_content_type
-    end
-
-    def query_string_params
-      @request.params
     end
 
     def render(data)
