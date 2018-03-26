@@ -14,9 +14,11 @@ module Simpler
     def initialize
       @router = Router.new
       @db = nil
+      @response = Rack::Response.new
     end
 
     def bootstrap!
+      require_logger
       setup_database
       require_app
       require_routes
@@ -28,11 +30,20 @@ module Simpler
 
     def call(env)
       route = @router.route_for(env)
-      controller = route.controller.new(env)
-      action = route.action
+      if route
+        env['simpler.controller.params'] = route.parse_params(env['PATH_INFO'])
+        controller = route.controller.new(env)
+        action = route.action
 
-      make_response(controller, action)
+        make_response(controller, action)
+      else
+        route_not_found
+      end
     end
+
+    protected
+
+    attr_accessor :response
 
     private
 
@@ -42,6 +53,10 @@ module Simpler
 
     def require_routes
       require Simpler.root.join('config/routes')
+    end
+
+    def require_logger
+      require Simpler.root.join('middleware/app_logger')
     end
 
     def setup_database
@@ -54,5 +69,9 @@ module Simpler
       controller.make_response(action)
     end
 
+    def route_not_found
+      self.response.status = 404
+      response
+    end
   end
 end
